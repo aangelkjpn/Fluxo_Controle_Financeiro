@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Fluxo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">Meu Fluxo</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="trocarAba('painel')">
+        <span class="nav-icon">▦</span> Painel
+      </button>
+      <button class="nav-item" onclick="trocarAba('renda')">
+        <span class="nav-icon">◎</span> Renda
+      </button>
+      <button class="nav-item" onclick="trocarAba('gastos')">
+        <span class="nav-icon">◇</span> Gastos
+      </button>
+      <button class="nav-item" onclick="trocarAba('reserva')">
+        <span class="nav-icon">△</span> Reserva
+      </button>
+      <button class="nav-item" onclick="trocarAba('historico')">
+        <span class="nav-icon">≡</span> Histórico
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="export-btn" onclick="exportarDados()">↓ Exportar dados</button>
+      <button class="export-btn" onclick="importarDados()">↑ Importar dados</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="processarImport(event)">
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- MES SELECTOR -->
+    <div class="topbar">
+      <div class="mes-nav">
+        <button class="mes-btn" onclick="mudarMes(-1)">‹</button>
+        <span class="mes-label" id="mes-label">—</span>
+        <button class="mes-btn" onclick="mudarMes(1)">›</button>
+      </div>
+      <button class="mes-btn" onclick="irParaHoje()" title="Mês atual">Hoje</button>
+    </div>
+
+    <!-- ABA PAINEL -->
+    <section id="aba-painel" class="aba active">
+      <div class="page-title">Painel <span class="page-sub" id="painel-mes-sub"></span></div>
+
+      <div class="cards-grid">
+        <div class="kpi-card kpi-entrada">
+          <div class="kpi-label">Entrou</div>
+          <div class="kpi-valor" id="p-entrada">R$ 0,00</div>
+          <div class="kpi-sub" id="p-entrada-sub"></div>
+        </div>
+        <div class="kpi-card kpi-saida">
+          <div class="kpi-label">Gastou</div>
+          <div class="kpi-valor" id="p-saida">R$ 0,00</div>
+          <div class="kpi-sub" id="p-saida-sub"></div>
+        </div>
+        <div class="kpi-card kpi-sobrou">
+          <div class="kpi-label">Sobrou</div>
+          <div class="kpi-valor" id="p-sobrou">R$ 0,00</div>
+          <div class="kpi-sub" id="p-sobrou-sub"></div>
+        </div>
+        <div class="kpi-card kpi-reserva">
+          <div class="kpi-label">Reserva total</div>
+          <div class="kpi-valor" id="p-reserva">R$ 0,00</div>
+          <div class="kpi-sub">acumulado</div>
+        </div>
+      </div>
+
+      <div class="section-row">
+        <div class="section-box" style="flex:1.4">
+          <div class="section-title">Gastos por categoria</div>
+          <div id="p-categorias" class="cat-list"></div>
+        </div>
+        <div class="section-box" style="flex:1">
+          <div class="section-title">Meta de reserva</div>
+          <div id="p-meta-area"></div>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-title">Últimos lançamentos</div>
+        <div id="p-ultimos"></div>
+      </div>
+    </section>
+
+    <!-- ABA RENDA -->
+    <section id="aba-renda" class="aba">
+      <div class="page-title">Renda <span class="page-sub" id="renda-mes-sub"></span></div>
+
+      <div class="section-box">
+        <div class="section-title">Calculadora do mês</div>
+        <div class="renda-calc">
+          <div class="calc-row">
+            <label>Dias úteis no mês</label>
+            <input type="number" id="r-dias-uteis" min="1" max="31" placeholder="Ex: 22" value="22" oninput="calcularRenda()" />
+          </div>
+          <div class="calc-row">
+            <label>Dias trabalhados no mês</label>
+            <input type="number" id="r-dias" min="1" max="31" placeholder="Ex: 22" oninput="calcularRenda()" />
+          </div>
+          <div class="calc-resultado" id="r-resultado">
+            <div class="calc-item"><span>Bolsa auxílio (proporcional)</span><span class="mono" id="r-bolsa">R$ 937,59</span></div>
+            <div class="calc-item"><span>Vale refeição</span><span class="mono" id="r-vr">R$ 0,00</span></div>
+            <div class="calc-item"><span>Vale transporte</span><span class="mono" id="r-vt">R$ 0,00</span></div>
+            <div class="calc-divider"></div>
+            <div class="calc-item calc-total"><span>Total estimado</span><span class="mono" id="r-total">R$ 937,59</span></div>
+          </div>
+          <button class="btn-primary" onclick="salvarRenda()">Salvar renda do mês</button>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-title">Outras entradas</div>
+        <div class="form-row">
+          <div class="field"><label>Descrição</label><input id="r-desc" placeholder="Ex: Freela, presente..." /></div>
+          <div class="field field-sm"><label>Valor (R$)</label><input type="number" id="r-valor" placeholder="0,00" min="0" step="0.01" /></div>
+          <button class="btn-primary" style="align-self:flex-end" onclick="addEntrada()">+ Adicionar</button>
+        </div>
+        <div id="r-lista-extras" class="lancamentos-lista"></div>
+      </div>
+    </section>
+
+    <!-- ABA GASTOS -->
+    <section id="aba-gastos" class="aba">
+      <div class="page-title">Gastos <span class="page-sub" id="gastos-mes-sub"></span></div>
+
+      <div class="section-box">
+        <div class="section-title">Novo gasto</div>
+        <div class="form-row">
+          <div class="field"><label>Descrição</label><input id="g-desc" placeholder="Ex: Teclado mecânico..." /></div>
+          <div class="field field-sm"><label>Valor (R$)</label><input type="number" id="g-valor" placeholder="0,00" min="0" step="0.01" /></div>
+          <div class="field field-sm"><label>Categoria</label>
+            <select id="g-cat">
+              <option value="Setup/Tech">🖥️ Setup / Tech</option>
+              <option value="Games">🎮 Games</option>
+              <option value="Alimentação">🍔 Alimentação</option>
+              <option value="Transporte">🚌 Transporte</option>
+              <option value="Roupas">👕 Roupas</option>
+              <option value="Lazer">🎉 Lazer</option>
+              <option value="Outros">📦 Outros</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="align-self:flex-end" onclick="addGasto()">+ Adicionar</button>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-title">Lançamentos do mês</div>
+        <div id="g-lista" class="lancamentos-lista"></div>
+      </div>
+    </section>
+
+    <!-- ABA RESERVA -->
+    <section id="aba-reserva" class="aba">
+      <div class="page-title">Reserva</div>
+
+      <div class="section-box">
+        <div class="section-title">Meta mensal de reserva</div>
+        <div class="form-row">
+          <div class="field"><label>Quero guardar por mês (R$)</label><input type="number" id="res-meta" placeholder="Ex: 300" min="0" step="10" /></div>
+          <button class="btn-primary" style="align-self:flex-end" onclick="salvarMeta()">Salvar meta</button>
+        </div>
+        <div id="res-meta-atual" class="meta-display"></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-title">Registrar valor guardado este mês</div>
+        <div class="form-row">
+          <div class="field"><label>Valor que guardei (R$)</label><input type="number" id="res-valor" placeholder="0,00" min="0" step="10" /></div>
+          <button class="btn-primary" style="align-self:flex-end" onclick="salvarReserva()">Registrar</button>
+        </div>
+        <div id="res-progresso"></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-title">Histórico de reserva</div>
+        <div id="res-historico" class="lancamentos-lista"></div>
+      </div>
+    </section>
+
+    <!-- ABA HISTORICO -->
+    <section id="aba-historico" class="aba">
+      <div class="page-title">Histórico</div>
+      <div id="hist-lista"></div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
