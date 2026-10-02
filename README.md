@@ -4,6 +4,8 @@ Aplicação web de **controle financeiro pessoal**, feita para acompanhar mês a
 
 Projeto pessoal, criado para organizar a renda do estágio e praticar JavaScript puro, manipulação do DOM e armazenamento local.
 
+**🔗 [Ver online](https://aangelkjpn.github.io/Fluxo_Controle_Financeiro/)** · teste direto no navegador, os dados ficam salvos só no seu computador.
+
 <p align="center">
   <img src="./docs/tela-painel.png" width="800" alt="Painel do Meu Fluxo">
 </p>
