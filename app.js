@@ -62,10 +62,15 @@ function pct(v, total) {
 }
 
 function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  document.getElementById('toast-msg').textContent = msg;
+  bootstrap.Toast.getOrCreateInstance(document.getElementById('toast'), { delay: 2500 }).show();
+}
+
+function barraProgresso(p) {
+  const cls = p >= 100 ? 'over' : p >= 50 ? '' : 'warn';
+  return `<div class="progress" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100">
+    <div class="progress-bar ${cls}" style="width:${p}%"></div>
+  </div>`;
 }
 
 function nomeMes(m, a) { return `${MESES[m]} ${a}`; }
@@ -76,6 +81,7 @@ function trocarAba(aba) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('aba-' + aba).classList.add('active');
   event.currentTarget.classList.add('active');
+  bootstrap.Offcanvas.getInstance(document.getElementById('sidebar'))?.hide();
   renderAba(aba);
 }
 
@@ -156,10 +162,9 @@ function renderPainel() {
     metaEl.innerHTML = '<div class="empty-state">Configure uma meta na aba Reserva</div>';
   } else {
     const p = pct(d.reserva, meta);
-    const cls = p >= 100 ? 'over' : p >= 50 ? '' : 'warn';
     metaEl.innerHTML = `
       <div class="progresso-label"><span>Guardado este mês</span><span>${fmt(d.reserva)} / ${fmt(meta)}</span></div>
-      <div class="progresso-bar"><div class="progresso-fill ${cls}" style="width:${p}%"></div></div>
+      ${barraProgresso(p)}
       <div style="font-size:13px;color:var(--text2)">${p}% da meta atingida</div>`;
   }
 
@@ -327,14 +332,13 @@ function renderReserva() {
   const progEl = document.getElementById('res-progresso');
   if (d.reserva || meta) {
     const p = meta ? pct(d.reserva, meta) : 0;
-    const cls = p >= 100 ? 'over' : p >= 50 ? '' : 'warn';
     progEl.innerHTML = `
       <div class="progresso-wrap">
         <div class="progresso-label">
           <span>${nomeMes(mesAtual, anoAtual)}</span>
           <span>${fmt(d.reserva)}${meta ? ' / ' + fmt(meta) : ''}</span>
         </div>
-        <div class="progresso-bar"><div class="progresso-fill ${cls}" style="width:${p}%"></div></div>
+        ${barraProgresso(p)}
         <div style="font-size:13px;color:var(--text2);margin-top:4px">${meta ? p + '% da meta' : 'meta não definida'}</div>
       </div>`;
   } else {

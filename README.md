@@ -32,8 +32,10 @@ Projeto pessoal, criado para organizar a renda do estágio e praticar JavaScript
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat&logo=bootstrap&logoColor=white)
 
-- **HTML, CSS e JavaScript** puros, sem framework nem bibliotecas
+- **HTML, CSS e JavaScript** puros, sem framework de JavaScript
+- **Bootstrap 5** (via CDN) para o grid responsivo, formulários, barras de progresso, notificações (toast) e o menu lateral no celular
 - **localStorage** para salvar os dados no navegador
 
 ---
@@ -46,7 +48,7 @@ Projeto pessoal, criado para organizar a renda do estágio e praticar JavaScript
    ```
 2. Abra o arquivo `index.html` no navegador.
 
-Não precisa instalar nada nem rodar servidor.
+Não precisa instalar nada nem rodar servidor (só de internet para carregar o Bootstrap e as fontes).
 
 ---
 
