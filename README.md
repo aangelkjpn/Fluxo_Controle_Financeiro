@@ -23,7 +23,8 @@ Projeto pessoal, criado para organizar a renda do estágio e praticar JavaScript
 - **Reserva:** meta mensal de quanto guardar e acompanhamento do progresso
 - **Histórico:** resumo de cada mês com entradas, gastos, reserva e saldo
 - **Navegação por mês** para consultar meses anteriores
-- **Exportar e importar dados** em JSON, para fazer backup ou trocar de computador
+- **Exportar para Excel** (.xlsx) com resumo por mês, lançamentos, renda e meta, e **importar de volta** a mesma planilha
+- **Backup em JSON**, que também pode ser importado
 
 ---
 
@@ -32,9 +33,14 @@ Projeto pessoal, criado para organizar a renda do estágio e praticar JavaScript
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat&logo=bootstrap&logoColor=white)
 
-- **HTML, CSS e JavaScript** puros, sem framework nem bibliotecas
+- **HTML, CSS e JavaScript** puros, sem framework de JavaScript
+- **Bootstrap 5** para o grid responsivo, formulários, barras de progresso, notificações (toast) e o menu lateral no celular
+- **ExcelJS** para gerar e ler as planilhas
 - **localStorage** para salvar os dados no navegador
+
+As bibliotecas ficam na pasta `libs/`, então o sistema funciona **sem internet**.
 
 ---
 
@@ -53,9 +59,12 @@ Não precisa instalar nada nem rodar servidor.
 ## Estrutura
 
 ```
-├── index.html   # Estrutura das abas (Painel, Renda, Gastos, Reserva, Histórico)
-├── style.css    # Estilos (tema escuro)
-└── app.js       # Lógica, cálculos e armazenamento
+├── index.html      # Estrutura das abas (Painel, Renda, Gastos, Reserva, Histórico)
+├── style.css       # Estilos (tema escuro)
+├── js/
+│   ├── app.js      # Lógica, cálculos e armazenamento
+│   └── excel.js    # Exportar e importar planilha Excel
+└── libs/           # Bootstrap e ExcelJS
 ```
 
 ---
@@ -63,7 +72,8 @@ Não precisa instalar nada nem rodar servidor.
 ## Observações
 
 - Os dados ficam salvos **apenas no seu navegador**, nada é enviado para a internet.
-- Use **Exportar dados** de vez em quando para ter um backup.
+- Use **Exportar Excel** de vez em quando para ter um backup. A planilha pode ser importada de volta (abas *Lançamentos*, *Meses* e *Configurações*; a aba *Resumo* é só para leitura).
+- Importar substitui os meses que estão no arquivo; os outros meses não são alterados.
 
 ---
 
