@@ -38,6 +38,25 @@ function setMeta(v) {
   localStorage.setItem('fluxo_meta', String(v));
 }
 
+// Entrada do mês: bolsa + VR (R$ 12/dia) + VT (R$ 19,85/dia) + entradas extras
+function entradaDoMes(d) {
+  return d.bolsa + (d.diasTrabalhados * 12) + (d.diasTrabalhados * 19.85)
+    + d.entradas.reduce((s, e) => s + e.valor, 0);
+}
+
+// Todos os meses salvos, do mais antigo para o mais recente: [{ mes, ano, d }]
+function mesesSalvos() {
+  const lista = [];
+  for (let k in localStorage) {
+    const m = k.match(/^fluxo_(\d{4})_(\d{2})$/);
+    if (!m) continue;
+    try {
+      lista.push({ ano: parseInt(m[1]), mes: parseInt(m[2]), d: JSON.parse(localStorage.getItem(k)) });
+    } catch(e) {}
+  }
+  return lista.sort((a,b) => a.ano - b.ano || a.mes - b.mes);
+}
+
 function getReservaTotal() {
   let total = 0;
   for (let k in localStorage) {
@@ -123,8 +142,7 @@ function renderPainel() {
   const sub = nomeMes(mesAtual, anoAtual);
   document.getElementById('painel-mes-sub').textContent = sub;
 
-  const totalEntradas = d.bolsa + (d.diasTrabalhados * 12) + (d.diasTrabalhados * 19.85)
-    + d.entradas.reduce((s, e) => s + e.valor, 0);
+  const totalEntradas = entradaDoMes(d);
   const totalGastos = d.gastos.reduce((s, g) => s + g.valor, 0);
   const sobrou = totalEntradas - totalGastos - d.reserva;
 
@@ -383,7 +401,7 @@ function renderHistorico() {
         const ano = parseInt(parts[0]);
         const mes = parseInt(parts[1]);
         const d = JSON.parse(localStorage.getItem(k));
-        const entrada = d.bolsa + (d.diasTrabalhados * 31.85) + d.entradas.reduce((s,e)=>s+e.valor,0);
+        const entrada = entradaDoMes(d);
         const saida = d.gastos.reduce((s,g)=>s+g.valor,0);
         if (entrada || saida || d.reserva) meses.push({ mes, ano, d, entrada, saida });
       } catch(e) {}
@@ -425,7 +443,7 @@ function exportarDados() {
   a.href = URL.createObjectURL(blob);
   a.download = `meufluxo_backup_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
-  toast('Dados exportados!');
+  toast('Backup JSON baixado!');
 }
 
 function importarDados() {
@@ -435,6 +453,11 @@ function importarDados() {
 function processarImport(e) {
   const file = e.target.files[0];
   if (!file) return;
+  if (file.name.toLowerCase().endsWith('.xlsx')) {
+    importarExcel(file);
+    e.target.value = '';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = ev => {
     try {
