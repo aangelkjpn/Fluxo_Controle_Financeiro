@@ -1,1 +1,522 @@
-<!DOCTYPE html><html lang="pt-BR" data-bs-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Meu Fluxo</title><meta name="description" content="Controle financeiro pessoal: acompanhe entradas, gastos por categoria e sua meta de reserva mês a mês."><link rel="icon" href="favicon.svg" type="image/svg+xml"><meta property="og:title" content="Meu Fluxo · Controle financeiro pessoal"><meta property="og:description" content="Acompanhe entradas, gastos por categoria e sua meta de reserva mês a mês."><meta property="og:image" content="https://aangelkjpn.github.io/Fluxo_Controle_Financeiro/docs/tela-painel.png"><meta property="og:url" content="https://aangelkjpn.github.io/Fluxo_Controle_Financeiro/"><meta property="og:type" content="website"><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="libs/bootstrap-5.3.8.min.css"><link rel="stylesheet" href="style.css"></head><body><div class="app"><aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Menu"><div class="sidebar-brand"><span class="brand-icon">◈</span> <span class="brand-name">Meu Fluxo</span> <button type="button" class="btn-close d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fechar"></button></div><nav class="sidebar-nav"><button class="nav-item active" onclick='trocarAba("painel")'><span class="nav-icon">▦</span> Painel</button> <button class="nav-item" onclick='trocarAba("renda")'><span class="nav-icon">◎</span> Renda</button> <button class="nav-item" onclick='trocarAba("gastos")'><span class="nav-icon">◇</span> Gastos</button> <button class="nav-item" onclick='trocarAba("reserva")'><span class="nav-icon">△</span> Reserva</button> <button class="nav-item" onclick='trocarAba("historico")'><span class="nav-icon">≡</span> Histórico</button></nav><div class="sidebar-footer"><button class="export-btn export-btn-excel" onclick="exportarExcel()">📊 Exportar Excel</button> <button class="export-btn" onclick="importarDados()">↑ Importar (Excel ou JSON)</button> <button class="export-btn" onclick="exportarDados()">↓ Backup JSON</button> <input type="file" id="import-file" accept=".xlsx,.json" style="display:none" onchange="processarImport(event)"></div></aside><main class="main"><div class="topbar"><button class="mes-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Abrir menu">☰</button><div class="mes-nav"><button class="mes-btn" onclick="mudarMes(-1)">‹</button> <span class="mes-label" id="mes-label">—</span> <button class="mes-btn" onclick="mudarMes(1)">›</button></div><button class="mes-btn" onclick="irParaHoje()" title="Mês atual">Hoje</button></div><section id="aba-painel" class="aba active"><div class="page-title">Painel <span class="page-sub" id="painel-mes-sub"></span></div><div class="row g-3 mb-4"><div class="col-6 col-xl-3"><div class="kpi-card kpi-entrada h-100"><div class="kpi-label">Entrou</div><div class="kpi-valor" id="p-entrada">R$ 0,00</div><div class="kpi-sub" id="p-entrada-sub"></div></div></div><div class="col-6 col-xl-3"><div class="kpi-card kpi-saida h-100"><div class="kpi-label">Gastou</div><div class="kpi-valor" id="p-saida">R$ 0,00</div><div class="kpi-sub" id="p-saida-sub"></div></div></div><div class="col-6 col-xl-3"><div class="kpi-card kpi-sobrou h-100"><div class="kpi-label">Sobrou</div><div class="kpi-valor" id="p-sobrou">R$ 0,00</div><div class="kpi-sub" id="p-sobrou-sub"></div></div></div><div class="col-6 col-xl-3"><div class="kpi-card kpi-reserva h-100"><div class="kpi-label">Reserva total</div><div class="kpi-valor" id="p-reserva">R$ 0,00</div><div class="kpi-sub">acumulado</div></div></div></div><div class="row g-3 mb-3"><div class="col-lg-7"><div class="section-box h-100 mb-0"><div class="section-title">Gastos por categoria</div><div id="p-categorias" class="cat-list"></div></div></div><div class="col-lg-5"><div class="section-box h-100 mb-0"><div class="section-title">Meta de reserva</div><div id="p-meta-area"></div></div></div></div><div class="section-box"><div class="section-title">Últimos lançamentos</div><div id="p-ultimos"></div></div></section><section id="aba-renda" class="aba"><div class="page-title">Renda <span class="page-sub" id="renda-mes-sub"></span></div><div class="section-box"><div class="section-title">Calculadora do mês</div><div class="renda-calc"><div class="calc-row"><label for="r-dias-uteis">Dias úteis no mês</label> <input type="number" class="form-control" id="r-dias-uteis" min="1" max="31" placeholder="Ex: 22" value="22" oninput="calcularRenda()"></div><div class="calc-row"><label for="r-dias">Dias trabalhados no mês</label> <input type="number" class="form-control" id="r-dias" min="1" max="31" placeholder="Ex: 22" oninput="calcularRenda()"></div><div class="calc-resultado" id="r-resultado"><div class="calc-item"><span>Bolsa auxílio (proporcional)</span><span class="mono" id="r-bolsa">R$ 937,59</span></div><div class="calc-item"><span>Vale refeição</span><span class="mono" id="r-vr">R$ 0,00</span></div><div class="calc-item"><span>Vale transporte</span><span class="mono" id="r-vt">R$ 0,00</span></div><div class="calc-divider"></div><div class="calc-item calc-total"><span>Total estimado</span><span class="mono" id="r-total">R$ 937,59</span></div></div><button class="btn btn-primary align-self-start" onclick="salvarRenda()">Salvar renda do mês</button></div></div><div class="section-box"><div class="section-title">Outras entradas</div><div class="row g-2 align-items-end"><div class="col-md"><label class="form-label" for="r-desc">Descrição</label><input class="form-control" id="r-desc" placeholder="Ex: Freela, presente..."></div><div class="col-md-3"><label class="form-label" for="r-valor">Valor (R$)</label><input type="number" class="form-control" id="r-valor" placeholder="0,00" min="0" step="0.01"></div><div class="col-12 col-md-auto"><button class="btn btn-primary w-100" onclick="addEntrada()">+ Adicionar</button></div></div><div id="r-lista-extras" class="lancamentos-lista"></div></div></section><section id="aba-gastos" class="aba"><div class="page-title">Gastos <span class="page-sub" id="gastos-mes-sub"></span></div><div class="section-box"><div class="section-title">Novo gasto</div><div class="row g-2 align-items-end"><div class="col-md"><label class="form-label" for="g-desc">Descrição</label><input class="form-control" id="g-desc" placeholder="Ex: Teclado mecânico..."></div><div class="col-6 col-md-2"><label class="form-label" for="g-valor">Valor (R$)</label><input type="number" class="form-control" id="g-valor" placeholder="0,00" min="0" step="0.01"></div><div class="col-6 col-md-3"><label class="form-label" for="g-cat">Categoria</label> <select class="form-select" id="g-cat"><option value="Setup/Tech">🖥️ Setup / Tech</option><option value="Games">🎮 Games</option><option value="Alimentação">🍔 Alimentação</option><option value="Transporte">🚌 Transporte</option><option value="Roupas">👕 Roupas</option><option value="Lazer">🎉 Lazer</option><option value="Outros">📦 Outros</option></select></div><div class="col-12 col-md-auto"><button class="btn btn-primary w-100" onclick="addGasto()">+ Adicionar</button></div></div></div><div class="section-box"><div class="section-title">Lançamentos do mês</div><div id="g-lista" class="lancamentos-lista"></div></div></section><section id="aba-reserva" class="aba"><div class="page-title">Reserva</div><div class="section-box"><div class="section-title">Meta mensal de reserva</div><div class="row g-2 align-items-end"><div class="col-md"><label class="form-label" for="res-meta">Quero guardar por mês (R$)</label><input type="number" class="form-control" id="res-meta" placeholder="Ex: 300" min="0" step="10"></div><div class="col-12 col-md-auto"><button class="btn btn-primary w-100" onclick="salvarMeta()">Salvar meta</button></div></div><div id="res-meta-atual" class="meta-display"></div></div><div class="section-box"><div class="section-title">Registrar valor guardado este mês</div><div class="row g-2 align-items-end"><div class="col-md"><label class="form-label" for="res-valor">Valor que guardei (R$)</label><input type="number" class="form-control" id="res-valor" placeholder="0,00" min="0" step="10"></div><div class="col-12 col-md-auto"><button class="btn btn-primary w-100" onclick="salvarReserva()">Registrar</button></div></div><div id="res-progresso"></div></div><div class="section-box"><div class="section-title">Histórico de reserva</div><div id="res-historico" class="lancamentos-lista"></div></div></section><section id="aba-historico" class="aba"><div class="page-title">Histórico</div><div id="hist-lista"></div></section></main></div><div class="toast-container position-fixed bottom-0 end-0 p-3"><div id="toast" class="toast align-items-center" role="status" aria-live="polite" aria-atomic="true"><div class="d-flex"><div class="toast-body" id="toast-msg"></div><button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button></div></div></div><script src="libs/bootstrap-5.3.8.bundle.min.js"></script><script src="libs/exceljs-4.4.0.min.js"></script><script src="js/app.js"></script><script src="js/excel.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Meu Fluxo</title>
+  <meta name="description" content="Controle financeiro pessoal: acompanhe entradas, gastos por categoria e sua meta de reserva mês a mês.">
+  <meta name="theme-color" content="#121420">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Meu Fluxo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta property="og:title" content="Meu Fluxo · Controle financeiro pessoal">
+  <meta property="og:description" content="Acompanhe entradas, gastos por categoria e sua meta de reserva mês a mês.">
+  <meta property="og:image" content="https://aangelkjpn.github.io/Fluxo_Controle_Financeiro/docs/tela-painel.png">
+  <meta property="og:url" content="https://aangelkjpn.github.io/Fluxo_Controle_Financeiro/">
+  <meta property="og:type" content="website">
+  <script>
+    // Aplica o tema salvo antes de pintar a página, para não piscar
+    (function () {
+      let t = null;
+      try { t = localStorage.getItem("meufluxo_tema"); } catch (e) {}
+      if (!t) t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.dataset.theme = t;
+      document.documentElement.dataset.bsTheme = t;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="libs/bootstrap-5.3.8.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ícones usados na página -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-painel" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+      <symbol id="i-renda" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+      <symbol id="i-gastos" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+      <symbol id="i-reserva" viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></symbol>
+      <symbol id="i-historico" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+      <symbol id="i-esq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-dir" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+      <symbol id="i-lua" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="i-planilha" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2M14 13h2M8 17h2M14 17h2"/></symbol>
+      <symbol id="i-subir" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+      <symbol id="i-baixar" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+      <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-compartilhar" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M8 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-2"/></symbol>
+      <symbol id="i-nuvem" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
+      <symbol id="i-nuvem-off" viewBox="0 0 24 24"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></symbol>
+    </defs>
+  </svg>
+
+  <div class="app">
+    <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="sidebar" aria-label="Menu">
+      <div class="sidebar-brand">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8 56 32 32 56 8 32Z" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><path d="M32 22 42 32 32 42 22 32Z" fill="currentColor"/></svg>
+        <span class="brand-name">Meu Fluxo</span>
+        <button type="button" class="btn-close d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Fechar"></button>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Seções">
+        <button class="nav-item active" data-aba="painel" onclick='trocarAba("painel")'><svg class="ic"><use href="#i-painel"/></svg> Painel</button>
+        <button class="nav-item" data-aba="renda" onclick='trocarAba("renda")'><svg class="ic"><use href="#i-renda"/></svg> Renda</button>
+        <button class="nav-item" data-aba="gastos" onclick='trocarAba("gastos")'><svg class="ic"><use href="#i-gastos"/></svg> Gastos</button>
+        <button class="nav-item" data-aba="reserva" onclick='trocarAba("reserva")'><svg class="ic"><use href="#i-reserva"/></svg> Reserva</button>
+        <button class="nav-item" data-aba="historico" onclick='trocarAba("historico")'><svg class="ic"><use href="#i-historico"/></svg> Histórico</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="export-btn export-btn-instalar" id="btn-instalar" onclick="instalarApp()" hidden><svg class="ic"><use href="#i-baixar"/></svg> Instalar app</button>
+        <div class="conta-lateral" id="conta-lateral">Seus dados ficam só neste aparelho.</div>
+        <button class="export-btn export-btn-excel" onclick="exportarExcel()"><svg class="ic"><use href="#i-planilha"/></svg> Exportar Excel</button>
+        <button class="export-btn" onclick="importarDados()"><svg class="ic"><use href="#i-subir"/></svg> Importar planilha Excel</button>
+        <input type="file" id="import-file" accept=".xlsx,.json" hidden onchange="processarImport(event)">
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Abrir menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+        <div class="mes-nav">
+          <button class="icon-btn" onclick="mudarMes(-1)" aria-label="Mês anterior"><svg class="ic"><use href="#i-esq"/></svg></button>
+          <span class="mes-label" id="mes-label" aria-live="polite">—</span>
+          <button class="icon-btn" onclick="mudarMes(1)" aria-label="Próximo mês"><svg class="ic"><use href="#i-dir"/></svg></button>
+        </div>
+        <div class="topbar-acoes">
+          <button class="pill-btn" id="btn-hoje" onclick="irParaHoje()" aria-label="Voltar para o mês atual"><span class="d-none d-sm-inline">Mês atual</span><span class="d-sm-none">Hoje</span></button>
+          <button class="icon-btn btn-nuvem" id="btn-nuvem" onclick="abrirConta()" data-situacao="local" aria-label="Conta e sincronização"><svg class="ic"><use href="#i-nuvem-off"/></svg></button>
+          <button class="icon-btn" id="btn-tema" onclick="alternarTema()" aria-label="Trocar tema"><svg class="ic"><use href="#i-sol"/></svg></button>
+        </div>
+      </header>
+
+      <!-- Painel -->
+      <section id="aba-painel" class="aba active">
+        <div class="aviso" id="aviso-iphone" hidden>
+          <p>Para usar como app no iPhone, toque em <svg class="ic ic-inline" aria-label="Compartilhar"><use href="#i-compartilhar"/></svg> <strong>Compartilhar</strong> e depois em <strong>Adicionar à Tela de Início</strong>.</p>
+          <div class="aviso-acoes">
+            <button class="link-btn" onclick="fecharDicaIphone()">Entendi</button>
+          </div>
+        </div>
+        <div class="aviso" id="aviso-backup" hidden>
+          <p>Faz <strong id="aviso-backup-dias">30</strong> dias desde o seu último backup. Baixe uma planilha para ter uma cópia guardada.</p>
+          <div class="aviso-acoes">
+            <button class="btn btn-primary" onclick="exportarExcel()">Exportar Excel</button>
+            <button class="link-btn" onclick="adiarBackup()">Lembrar em 7 dias</button>
+          </div>
+        </div>
+        <div class="hero" id="p-hero">
+          <p class="hero-label" id="p-hero-label">Sobrou neste mês</p>
+          <div class="hero-valor" id="p-sobrou">R$ 0,00</div>
+          <p class="hero-sub" id="p-sobrou-sub"></p>
+
+          <div class="fluxo" id="p-fluxo"></div>
+
+          <dl class="fluxo-legenda">
+            <div class="leg leg-entrada">
+              <dt>Entrou</dt>
+              <dd id="p-entrada">R$ 0,00</dd>
+              <dd class="leg-sub" id="p-entrada-sub"></dd>
+            </div>
+            <div class="leg leg-gasto">
+              <dt><i class="sw"></i>Gastou</dt>
+              <dd id="p-saida">R$ 0,00</dd>
+              <dd class="leg-sub" id="p-saida-sub"></dd>
+            </div>
+            <div class="leg leg-guardou">
+              <dt><i class="sw"></i>Guardou</dt>
+              <dd id="p-guardou">R$ 0,00</dd>
+              <dd class="leg-sub" id="p-guardou-sub"></dd>
+            </div>
+            <div class="leg leg-sobrou">
+              <dt><i class="sw"></i>Sobrou</dt>
+              <dd id="p-sobrou-leg">R$ 0,00</dd>
+              <dd class="leg-sub" id="p-sobrou-pct"></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="carteiras" id="p-carteiras" hidden></div>
+
+        <div class="painel-grid">
+          <div class="bloco">
+            <h2 class="bloco-titulo">Para onde foi o dinheiro</h2>
+            <div id="p-categorias" class="cat-list"></div>
+          </div>
+          <div class="bloco">
+            <h2 class="bloco-titulo">Meta de reserva</h2>
+            <div id="p-meta-area"></div>
+          </div>
+        </div>
+
+        <div class="bloco parcelas-painel" id="p-parcelas-bloco" hidden>
+          <div class="bloco-topo">
+            <h2 class="bloco-titulo">Parcelas</h2>
+            <button class="link-btn" onclick='trocarAba("gastos"); document.getElementById("bloco-parcelas").scrollIntoView()'>Ver parcelas</button>
+          </div>
+          <div class="parcelas-painel-corpo">
+            <div class="meta-texto" id="p-parcelas-resumo"></div>
+            <div class="col-grafico" id="p-parcelas-grafico" role="img" aria-label="Total em parcelas nos próximos 6 meses"></div>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <div class="bloco-topo">
+            <h2 class="bloco-titulo">Últimos lançamentos</h2>
+            <button class="link-btn" onclick='trocarAba("gastos")'>Ver todos os gastos</button>
+          </div>
+          <div id="p-ultimos"></div>
+        </div>
+      </section>
+
+      <!-- Renda -->
+      <section id="aba-renda" class="aba">
+        <h1 class="page-title">Renda <span class="page-sub" id="renda-mes-sub"></span></h1>
+
+        <div class="bloco" id="r-vazio" hidden>
+          <h2 class="bloco-titulo">Como você recebe?</h2>
+          <p class="bloco-desc">Conte as partes do que você recebe, como salário, bolsa, vale-refeição ou Ticket. O app usa isso para calcular a renda de cada mês.</p>
+          <button class="btn btn-primary" onclick="abrirConfigRenda()">Configurar minha renda</button>
+        </div>
+
+        <div class="renda-grid" id="r-calc">
+          <div class="bloco">
+            <div class="bloco-topo">
+              <h2 class="bloco-titulo">Renda do mês</h2>
+              <span class="situacao-pill" id="r-situacao" data-salva="nao">Estimativa</span>
+            </div>
+            <p class="bloco-desc">Quando o pagamento cair, ajuste os valores para o que caiu de verdade e salve.</p>
+            <div class="calc-campos" id="r-dias-campos">
+              <div>
+                <label class="form-label" for="r-dias-uteis">Dias úteis no mês</label>
+                <input type="number" class="form-control" id="r-dias-uteis" min="1" max="31" placeholder="22" value="22" oninput="recalcularRenda()">
+              </div>
+              <div>
+                <label class="form-label" for="r-dias">Dias trabalhados</label>
+                <input type="number" class="form-control" id="r-dias" min="0" max="31" placeholder="Ex: 20" oninput="recalcularRenda()">
+              </div>
+            </div>
+            <div class="r-linhas" id="r-linhas"></div>
+            <div class="renda-acoes">
+              <button class="btn btn-primary" onclick="salvarRenda()">Salvar renda do mês</button>
+              <button class="link-btn" id="r-recalcular" onclick="usarConfigAtual()" hidden>Usar como recebo hoje</button>
+            </div>
+          </div>
+
+          <div class="bloco recibo">
+            <h2 class="bloco-titulo">Quanto entra</h2>
+            <div id="r-totais"></div>
+            <button class="link-btn r-config" onclick="abrirConfigRenda()">Editar como eu recebo</button>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <h2 class="bloco-titulo">Outras entradas</h2>
+          <form class="form-linha" onsubmit="event.preventDefault();addEntrada()">
+            <div class="campo-grow">
+              <label class="form-label" for="r-desc">Descrição</label>
+              <input class="form-control" id="r-desc" placeholder="Ex: Freela, presente…" autocomplete="off">
+            </div>
+            <div class="campo-valor">
+              <label class="form-label" for="r-valor">Valor (R$)</label>
+              <input type="number" class="form-control" id="r-valor" placeholder="0,00" min="0" step="0.01" inputmode="decimal">
+            </div>
+            <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-mais"/></svg> Adicionar entrada</button>
+          </form>
+          <div id="r-lista-extras" class="lancamentos-lista"></div>
+        </div>
+      </section>
+
+      <!-- Gastos -->
+      <section id="aba-gastos" class="aba">
+        <h1 class="page-title">Gastos <span class="page-sub" id="gastos-mes-sub"></span></h1>
+
+        <div class="bloco">
+          <h2 class="bloco-titulo">Novo gasto</h2>
+          <form class="gasto-form" onsubmit="event.preventDefault();addGasto()">
+            <div class="form-linha">
+            <div class="campo-grow">
+              <label class="form-label" for="g-desc">Descrição</label>
+              <input class="form-control" id="g-desc" placeholder="Ex: Teclado mecânico…" autocomplete="off">
+            </div>
+            <div class="campo-valor">
+              <label class="form-label" for="g-valor">Valor (R$)</label>
+              <input type="number" class="form-control" id="g-valor" placeholder="0,00" min="0" step="0.01" inputmode="decimal">
+            </div>
+            </div>
+            <div class="cat-campo">
+              <div class="cat-campo-topo">
+                <span class="form-label" id="g-cat-rotulo">Categoria</span>
+                <button type="button" class="link-btn link-discreto" onclick="abrirCategorias()">Editar categorias</button>
+              </div>
+              <input type="hidden" id="g-cat" value="Alimentação">
+              <div class="cat-escolha" id="g-cat-escolha" role="radiogroup" aria-labelledby="g-cat-rotulo"></div>
+            </div>
+            <div class="form-linha">
+            <div class="campo-cat" id="g-pago-campo" hidden>
+              <label class="form-label" for="g-pago">Pago com</label>
+              <select class="form-select" id="g-pago"></select>
+            </div>
+            <button class="btn btn-primary" type="submit"><svg class="ic"><use href="#i-mais"/></svg> Adicionar gasto</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="bloco">
+          <div class="bloco-topo">
+            <h2 class="bloco-titulo">Lançamentos do mês</h2>
+            <span class="bloco-total" id="g-total"></span>
+          </div>
+          <div id="g-lista" class="lancamentos-lista"></div>
+        </div>
+
+        <div class="bloco" id="bloco-parcelas">
+          <div class="bloco-topo">
+            <h2 class="bloco-titulo">Parcelas</h2>
+            <span class="bloco-total" id="p-total"></span>
+          </div>
+          <p class="bloco-desc">Compras parceladas entram sozinhas nos gastos de cada mês até a última parcela.</p>
+          <button class="btn btn-secundario" id="p-abrir" onclick="abrirFormParcela()" aria-expanded="false" aria-controls="p-form"><svg class="ic"><use href="#i-mais"/></svg> Nova parcela</button>
+          <form class="parcela-form" id="p-form" hidden onsubmit="event.preventDefault();addParcela()" oninput="atualizarPreviaParcela()">
+            <div class="form-linha">
+              <div class="campo-grow">
+                <label class="form-label" for="p-desc">Descrição</label>
+                <input class="form-control" id="p-desc" placeholder="Ex: Fone, celular, curso…" autocomplete="off">
+              </div>
+              <div class="campo-valor">
+                <label class="form-label" for="p-valor">Valor da parcela (R$)</label>
+                <input type="number" class="form-control" id="p-valor" placeholder="0,00" min="0" step="0.01" inputmode="decimal">
+              </div>
+              <div class="campo-valor">
+                <label class="form-label" for="p-n">Nº de parcelas</label>
+                <input type="number" class="form-control" id="p-n" placeholder="Ex: 10" min="1" max="120" inputmode="numeric">
+              </div>
+            </div>
+            <div class="cat-campo">
+              <div class="cat-campo-topo">
+                <span class="form-label" id="p-cat-rotulo">Categoria</span>
+                <button type="button" class="link-btn link-discreto" onclick="abrirCategorias()">Editar categorias</button>
+              </div>
+              <input type="hidden" id="p-cat" value="Alimentação">
+              <div class="cat-escolha" id="p-cat-escolha" role="radiogroup" aria-labelledby="p-cat-rotulo"></div>
+            </div>
+            <div class="form-linha">
+              <div class="campo-cat">
+                <label class="form-label" for="p-inicio">Primeira parcela</label>
+                <input type="month" class="form-control" id="p-inicio">
+              </div>
+              <div class="campo-cat" id="p-pago-campo" hidden>
+                <label class="form-label" for="p-pago">Pago com</label>
+                <select class="form-select" id="p-pago"></select>
+              </div>
+              <button class="btn btn-primary" type="submit">Adicionar parcela</button>
+            </div>
+            <p class="parcela-previa" id="p-previa" aria-live="polite"></p>
+          </form>
+          <div id="p-lista" class="lancamentos-lista"></div>
+        </div>
+      </section>
+
+      <!-- Reserva -->
+      <section id="aba-reserva" class="aba">
+        <h1 class="page-title">Reserva <span class="page-sub" id="reserva-mes-sub"></span></h1>
+
+        <div class="reserva-topo">
+          <div class="bloco reserva-resumo" id="res-progresso"></div>
+
+          <div class="reserva-forms">
+            <div class="bloco">
+              <h2 class="bloco-titulo">Meta mensal</h2>
+              <form class="form-linha" onsubmit="event.preventDefault();salvarMeta()">
+                <div class="campo-grow">
+                  <label class="form-label" for="res-meta">Quero guardar por mês (R$)</label>
+                  <input type="number" class="form-control" id="res-meta" placeholder="Ex: 300" min="0" step="10" inputmode="decimal">
+                </div>
+                <button class="btn btn-secundario" type="submit">Salvar meta</button>
+              </form>
+              <div id="res-meta-atual" class="meta-display"></div>
+            </div>
+
+            <div class="bloco">
+              <h2 class="bloco-titulo">Quanto guardei este mês</h2>
+              <form class="form-linha" onsubmit="event.preventDefault();salvarReserva()">
+                <div class="campo-grow">
+                  <label class="form-label" for="res-valor">Valor guardado (R$)</label>
+                  <input type="number" class="form-control" id="res-valor" placeholder="0,00" min="0" step="10" inputmode="decimal">
+                </div>
+                <button class="btn btn-primary" type="submit">Registrar</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <h2 class="bloco-titulo">Guardado em cada mês</h2>
+          <div id="res-historico" class="res-historico"></div>
+        </div>
+      </section>
+
+      <!-- Histórico -->
+      <section id="aba-historico" class="aba">
+        <h1 class="page-title">Histórico</h1>
+        <div class="hist-legenda" id="hist-legenda" hidden>
+          <span><i class="sw sw-gasto"></i>Gastou</span>
+          <span><i class="sw sw-guardou"></i>Guardou</span>
+          <span><i class="sw sw-sobrou"></i>Sobrou</span>
+          <span class="hist-legenda-nota">A barra inteira é o que entrou no mês.</span>
+        </div>
+        <div id="hist-lista"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Navegação inferior no celular -->
+  <nav class="bottom-nav d-lg-none" aria-label="Seções">
+    <button class="nav-item active" data-aba="painel" onclick='trocarAba("painel")'><svg class="ic"><use href="#i-painel"/></svg><span>Painel</span></button>
+    <button class="nav-item" data-aba="renda" onclick='trocarAba("renda")'><svg class="ic"><use href="#i-renda"/></svg><span>Renda</span></button>
+    <button class="nav-item" data-aba="gastos" onclick='trocarAba("gastos")'><svg class="ic"><use href="#i-gastos"/></svg><span>Gastos</span></button>
+    <button class="nav-item" data-aba="reserva" onclick='trocarAba("reserva")'><svg class="ic"><use href="#i-reserva"/></svg><span>Reserva</span></button>
+    <button class="nav-item" data-aba="historico" onclick='trocarAba("historico")'><svg class="ic"><use href="#i-historico"/></svg><span>Histórico</span></button>
+  </nav>
+
+  <div class="dica" id="dica" role="tooltip" hidden></div>
+
+  <!-- Minhas categorias -->
+  <div class="modal fade" id="modal-categorias" tabindex="-1" aria-labelledby="cat-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="cat-titulo">Minhas categorias</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <h3 class="cat-secao">Categorias que eu uso</h3>
+          <p class="conta-intro">Toque para ligar ou desligar. Só as ligadas aparecem na hora de lançar um gasto.</p>
+          <div class="cat-escolha" id="cat-catalogo"></div>
+
+          <h3 class="cat-secao">Criadas por mim</h3>
+          <div class="cat-escolha" id="cat-proprias"></div>
+
+          <div class="cat-criar">
+            <label class="form-label" for="cat-nova-nome">Nova categoria</label>
+            <div class="cat-criar-linha">
+              <input class="form-control" id="cat-nova-nome" placeholder="Ex: Academia, Maquiagem, Viagem" maxlength="24" autocomplete="off"
+                onkeydown="if (event.key === 'Enter') { event.preventDefault(); criarCategoria(); }">
+              <button type="button" class="btn btn-secundario" onclick="criarCategoria()"><svg class="ic"><use href="#i-mais"/></svg> Criar</button>
+            </div>
+            <span class="form-label" id="cat-icone-rotulo">Ícone</span>
+            <div class="icone-grade" id="cat-icones" role="radiogroup" aria-labelledby="cat-icone-rotulo"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secundario" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarCategorias()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Como eu recebo -->
+  <div class="modal fade" id="modal-renda" tabindex="-1" aria-labelledby="cfg-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="cfg-titulo">Como eu recebo</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="conta-intro">Monte as partes do que você recebe. Vale do mês atual em diante: os meses que você já salvou não mudam.</p>
+          <div id="cfg-fontes"></div>
+          <button type="button" class="btn btn-secundario w-100" onclick="adicionarFonte()"><svg class="ic"><use href="#i-mais"/></svg> Adicionar parte</button>
+          <details class="cfg-ajuda">
+            <summary>Exemplos</summary>
+            <ul>
+              <li><strong>Salário fixo:</strong> fixo no mês, na conta.</li>
+              <li><strong>Bolsa que depende dos dias:</strong> proporcional aos dias, na conta.</li>
+              <li><strong>Vale-refeição em dinheiro:</strong> por dia trabalhado, na conta.</li>
+              <li><strong>Ticket ou passe de ônibus:</strong> por dia trabalhado, em outro cartão (o saldo aparece separado e não entra no "Sobrou").</li>
+            </ul>
+          </details>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secundario" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="salvarConfigRenda()">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conta e sincronização -->
+  <div class="modal fade" id="modal-conta" tabindex="-1" aria-labelledby="conta-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="conta-titulo">Sincronizar entre aparelhos</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="conta-msg" id="conta-erro" role="alert" hidden></p>
+          <div id="conta-fora">
+            <p class="conta-intro" id="conta-intro">Entre com sua conta para ver os mesmos dados no PC e no celular. Sem conta, tudo continua salvo só neste aparelho.</p>
+            <form onsubmit="enviarConta(event)" class="conta-form">
+              <div id="conta-campo-email">
+                <label class="form-label" for="conta-email-input">E-mail</label>
+                <input type="email" class="form-control" id="conta-email-input" autocomplete="email" required>
+              </div>
+              <div>
+                <label class="form-label" for="conta-senha">Senha</label>
+                <input type="password" class="form-control" id="conta-senha" autocomplete="current-password" minlength="6" required>
+              </div>
+              <button class="btn btn-primary" type="submit" id="conta-enviar">Entrar</button>
+            </form>
+            <div class="conta-links">
+              <button class="link-btn" id="conta-alternar" onclick="alternarModoConta()">Não tem conta? Criar conta</button>
+              <button class="link-btn link-discreto" id="conta-esqueci" onclick="contaEsqueci()">Esqueci a senha</button>
+            </div>
+          </div>
+
+          <div id="conta-dentro" hidden>
+            <p class="conta-quem">Conectado como <strong id="conta-email"></strong></p>
+            <p class="conta-situacao" id="conta-situacao" data-situacao="ok">Conectado</p>
+            <p class="conta-intro">Tudo que você lança aqui vai para a sua conta e aparece nos outros aparelhos em que você entrar.</p>
+            <div class="conta-acoes">
+              <button class="btn btn-secundario" onclick="contaSincronizarAgora()">Sincronizar agora</button>
+              <button class="btn btn-secundario" onclick="contaSair(false)">Sair da conta</button>
+            </div>
+            <p class="conta-nota">Ao sair, os dados são apagados deste aparelho, mas continuam salvos na sua conta.</p>
+            <button class="link-btn link-perigo" id="conta-sair-forcar" onclick="contaSair(true)" hidden>Sair mesmo assim</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-msg"></div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="libs/bootstrap-5.3.8.bundle.min.js"></script>
+  <script src="libs/exceljs-4.4.0.min.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/categorias.js"></script>
+  <script src="js/renda.js"></script>
+  <script src="js/parcelas.js"></script>
+  <script src="js/excel.js"></script>
+  <script src="libs/supabase-js-2.117.3.min.js"></script>
+  <script src="js/sync.js"></script>
+</body>
+</html>
