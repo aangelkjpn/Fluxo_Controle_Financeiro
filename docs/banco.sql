@@ -24,3 +24,16 @@ create policy "apagar os meus" on public.registros
 -- Só quem está logado acessa a tabela
 revoke all on public.registros from anon;
 grant select, insert, update, delete on public.registros to authenticated;
+
+-- Função chamada uma vez por dia pela tarefa .github/workflows/manter-supabase-ativo.yml,
+-- para o plano grátis não pausar o projeto por inatividade.
+-- Não lê nem altera nenhum dado: só responde 1.
+create or replace function public.manter_ativo()
+returns integer
+language sql
+stable
+set search_path = ''
+as $$ select 1 $$;
+
+revoke all on function public.manter_ativo() from public;
+grant execute on function public.manter_ativo() to anon;
