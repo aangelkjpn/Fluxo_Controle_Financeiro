@@ -1,0 +1,29 @@
+name: Manter Supabase ativo
+
+# O plano grátis do Supabase pausa o projeto depois de 7 dias sem atividade.
+# Esta tarefa chama uma vez por dia a função manter_ativo() do banco, que só
+# responde 1 (não lê nem altera dados). Ela é criada pelo docs/banco.sql.
+# Se o projeto estiver pausado, a execução falha e o GitHub avisa por e-mail.
+
+on:
+  schedule:
+    - cron: "37 11 * * *" # todo dia às 11:37 UTC (08:37 em Brasília)
+  workflow_dispatch: # botão "Run workflow" na aba Actions, para testar
+
+jobs:
+  manter-ativo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chamar manter_ativo() no Supabase
+        env:
+          # Mesma URL e chave pública usadas pelo app em js/sync.js
+          SUPABASE_URL: https://qqxtpvusgbyqfyzlyzcy.supabase.co
+          SUPABASE_KEY: sb_publishable_jAbRMyVHfr4HPDyxNcYsSQ_sXozOJ8l
+        run: |
+          curl --fail-with-body --silent --show-error --retry 3 --retry-delay 30 \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/manter_ativo" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+          echo
+          echo "Supabase respondeu: projeto ativo."

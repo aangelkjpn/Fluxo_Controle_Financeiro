@@ -103,6 +103,15 @@ Se você fizer um fork, a sincronização continua apontando para o Supabase des
 1. Crie um projeto em [supabase.com](https://supabase.com) e rode o [`docs/banco.sql`](docs/banco.sql) no **SQL Editor**.
 2. Em **Authentication → URL Configuration**, coloque o endereço do seu site em **Site URL**.
 3. Troque `SUPABASE_URL` e `SUPABASE_KEY` no começo de `js/sync.js` pela URL e pela chave *publishable* do seu projeto.
+4. Faça a mesma troca em `.github/workflows/manter-supabase-ativo.yml` (veja abaixo).
+
+### Por que tem uma tarefa automática no GitHub
+
+O plano grátis do Supabase pausa o projeto depois de 7 dias sem atividade. Para isso não acontecer, a tarefa [`manter-supabase-ativo`](.github/workflows/manter-supabase-ativo.yml) roda uma vez por dia no GitHub Actions e chama a função `manter_ativo()` do banco, que só responde `1` e não lê nem altera nenhum dado.
+
+- Cada execução aparece na aba **Actions** do repositório. Se o projeto estiver pausado, ela falha e o GitHub avisa por e-mail.
+- Dá para rodar na hora pelo botão **Run workflow**.
+- O GitHub desliga tarefas agendadas em repositórios sem nenhum commit por 60 dias. Ele avisa por e-mail antes, e para reativar basta um clique na aba **Actions**.
 
 ---
 
@@ -121,6 +130,7 @@ Se você fizer um fork, a sincronização continua apontando para o Supabase des
 │   ├── excel.js          # Exportar e importar a planilha Excel
 │   └── sync.js           # Login e sincronização com o Supabase
 ├── icons/                # Ícones do app
+├── .github/workflows/    # Tarefa diária que mantém o Supabase ativo
 ├── docs/
 │   ├── banco.sql         # Estrutura do banco no Supabase
 │   └── *.png             # Imagens deste README
