@@ -2,7 +2,7 @@
 // Arquivos do app: tenta a rede primeiro (para pegar atualizações) e usa o cache se estiver offline.
 // Fontes do Google: usa o cache primeiro, já que não mudam.
 
-const CACHE = "meufluxo-v5";
+const CACHE = "meufluxo-v6";
 
 const ARQUIVOS = [
   "./",

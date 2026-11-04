@@ -242,7 +242,8 @@ function irParaHoje() {
 }
 
 function atualizarLabel() {
-  $("mes-label").textContent = nomeMes(mesAtual, anoAtual);
+  // No celular o CSS mostra só o nome curto ("Nov 2026")
+  $("mes-label").innerHTML = `<span class="mes-longo">${MESES[mesAtual]}</span><span class="mes-curto">${MESES[mesAtual].slice(0, 3)}</span> ${anoAtual}`;
   const hoje = new Date();
   $("btn-hoje").disabled = mesAtual === hoje.getMonth() && anoAtual === hoje.getFullYear();
 }
@@ -271,6 +272,10 @@ function aplicarTema(tema) {
   const btn = $("btn-tema");
   btn.querySelector("use").setAttribute("href", tema === "light" ? "#i-lua" : "#i-sol");
   btn.setAttribute("aria-label", tema === "light" ? "Usar tema escuro" : "Usar tema claro");
+  // No celular o botão fica no menu lateral
+  const doMenu = $("btn-tema-menu");
+  doMenu.querySelector("use").setAttribute("href", tema === "light" ? "#i-lua" : "#i-sol");
+  doMenu.querySelector("span").textContent = tema === "light" ? "Usar tema escuro" : "Usar tema claro";
 }
 
 function alternarTema() {
