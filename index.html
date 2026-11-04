@@ -78,6 +78,7 @@
       <div class="sidebar-footer">
         <button class="export-btn export-btn-instalar" id="btn-instalar" onclick="instalarApp()" hidden><svg class="ic"><use href="#i-baixar"/></svg> Instalar app</button>
         <div class="conta-lateral" id="conta-lateral">Seus dados ficam só neste aparelho.</div>
+        <button class="export-btn btn-tema-menu" id="btn-tema-menu" onclick="alternarTema()"><svg class="ic"><use href="#i-sol"/></svg> <span>Usar tema claro</span></button>
         <button class="export-btn export-btn-excel" onclick="exportarExcel()"><svg class="ic"><use href="#i-planilha"/></svg> Exportar Excel</button>
         <button class="export-btn" onclick="importarDados()"><svg class="ic"><use href="#i-subir"/></svg> Importar planilha Excel</button>
         <input type="file" id="import-file" accept=".xlsx,.json" hidden onchange="processarImport(event)">
