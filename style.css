@@ -99,6 +99,9 @@
 /* ============ Base ============ */
 *, ::before, ::after { box-sizing: border-box; }
 
+/* Nada pode empurrar a página para o lado no celular (clip não quebra o topo fixo) */
+html, body { overflow-x: clip; }
+
 body {
   margin: 0;
   font-family: var(--f-body);
@@ -275,7 +278,8 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   border-bottom: 1px solid var(--line);
 }
 
-.mes-nav { display: flex; align-items: center; gap: 6px; }
+.mes-nav { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.mes-nav .icon-btn, .topbar > .icon-btn { flex-shrink: 0; }
 
 .mes-label {
   font-family: var(--f-display);
@@ -285,9 +289,14 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   min-width: 150px;
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.topbar-acoes { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.mes-curto { display: none; }
+.btn-tema-menu { display: none !important; }
+
+.topbar-acoes { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
 .icon-btn {
   display: inline-grid;
@@ -1405,6 +1414,14 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
   .topbar { padding: 0.6rem 1rem; gap: 6px; }
   .mes-nav { gap: 2px; }
   .mes-label { min-width: 0; font-size: 16px; padding: 0 4px; }
+  /* Mês abreviado ("Nov 2026") e "Hoje" escondido quando já está no mês atual */
+  .mes-longo { display: none; }
+  .mes-curto { display: inline; }
+  .pill-btn[disabled] { display: none; }
+  /* O botão de tema vai para o menu lateral, para sobrar espaço para o mês */
+  #btn-tema { display: none; }
+  .btn-tema-menu { display: flex !important; }
+  .topbar-acoes { gap: 6px; }
   .icon-btn { width: 34px; height: 34px; }
   .pill-btn { height: 34px; }
   .pill-btn { padding: 0 11px; }
@@ -1443,6 +1460,16 @@ html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
 @media (display-mode: standalone) {
   .topbar { padding-top: max(0.6rem, env(safe-area-inset-top)); }
   .sidebar-brand { padding-top: max(1.5rem, env(safe-area-inset-top)); }
+}
+
+/* Telas bem estreitas (ou letra grande no celular): botões do topo mais compactos */
+@media (max-width: 350px) {
+  .topbar { padding-left: 0.6rem; padding-right: 0.6rem; gap: 4px; }
+  .topbar .icon-btn { width: 30px; height: 30px; }
+  .pill-btn { height: 30px; padding: 0 8px; font-size: 13px; }
+  .mes-nav { gap: 0; }
+  .mes-label { font-size: 15px; padding: 0 3px; }
+  .topbar-acoes { gap: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
